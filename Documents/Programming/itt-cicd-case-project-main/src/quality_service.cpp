@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <cctype>
 #include <numeric>
+#include <iostream>
 
 static std::string trim(const std::string& input) {
     size_t start = input.find_first_not_of(" \t\r\n");
@@ -11,6 +12,7 @@ static std::string trim(const std::string& input) {
 }
 
 std::string QualityService::calculateGrade(int score) const {
+    std::cout << "score is " << score << std::endl;
     if (score < 0 || score > 100) return "Ugyldig";
     if (score >= 90) return "A";
     if (score >= 80) return "B";
@@ -27,7 +29,6 @@ int QualityService::calculateDiscount(const DiscountRequest& request) const {
     if (request.amount > 100) discount = 10;
     if (request.amount >= 500) discount = 20;
     if (request.amount >= 1000) discount = 30;
-
     if (request.loyalCustomer) discount += 5;
     if (request.couponCode == "SAVE10") discount += 10;
     if (request.productionMode && request.hourOfDay >= 22) discount += 5;
@@ -42,6 +43,7 @@ bool QualityService::canBookSeats(const BookingRequest& request) const {
     if (request.requestedSeats <= 6) return true;
     if (request.hasSafetyOverride && request.currentReservations < 100) return true;
     return false;
+
 }
 
 std::string QualityService::formatUsername(const std::string& name) const {
@@ -49,6 +51,7 @@ std::string QualityService::formatUsername(const std::string& name) const {
     std::string value = trim(name);
     std::transform(value.begin(), value.end(), value.begin(),
         [](unsigned char c){ return std::tolower(c); });
+
     return value;
 }
 

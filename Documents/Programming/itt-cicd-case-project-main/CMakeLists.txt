@@ -18,6 +18,10 @@ target_include_directories(quality_core PUBLIC include external)
 
 add_executable(quality_api src/main.cpp)
 target_link_libraries(quality_api PRIVATE quality_core)
+if (WIN32)
+  target_compile_definitions(quality_api PRIVATE _WIN32_WINNT=0x0A00)
+  target_link_libraries(quality_api PRIVATE ws2_32)
+endif()
 
 enable_testing()
 add_executable(quality_service_tests tests/quality_service_test.cpp)
