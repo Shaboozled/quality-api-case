@@ -4,6 +4,14 @@
 #include <numeric>
 #include <iostream>
 
+static bool isValidIntRange(int v, int min, int max) {
+    return v >= min && v <= max;
+}
+
+static bool isValidString(const std::string& s, size_t maxLen = 50) {
+    return !s.empty() && s.size() <= maxLen;
+}
+
 static std::string trim(const std::string& input) {
     size_t start = input.find_first_not_of(" \t\r\n");
     if (start == std::string::npos) return "";
@@ -13,6 +21,8 @@ static std::string trim(const std::string& input) {
 
 std::string QualityService::calculateGrade(int score) const {
     std::cout << "score is " << score << std::endl;
+    if (!isValidIntRange(score, 0, 100)) return "INVALID INPUT";
+
     if (score < 0 || score > 100) return "Ugyldig";
     if (score >= 90) return "A";
     if (score >= 80) return "B";
@@ -22,8 +32,8 @@ std::string QualityService::calculateGrade(int score) const {
 }
 
 int QualityService::calculateDiscount(const DiscountRequest& request) const {
-    if (request.amount < 0) return -1;
-    if (request.hourOfDay < 0 || request.hourOfDay > 23) return -1;
+    if (!isValidIntRange(request.amount, 0, 100000)) return 0;
+    if (!isValidIntRange(request.hourOfDay, 0, 23)) return 0;
 
     int discount = 0;
     if (request.amount > 100) discount = 10;
@@ -38,7 +48,9 @@ int QualityService::calculateDiscount(const DiscountRequest& request) const {
 }
 
 bool QualityService::canBookSeats(const BookingRequest& request) const {
-    if (request.maintenanceMode && !request.hasSafetyOverride) return false;
+    if (!isValidIntRange(request.requestedSeats, 1, 1000)) return false;
+    if (!isValidIntRange(request.currentReservations, 0, 10000)) return false;
+
     if (request.requestedSeats < 1) return false;
     if (request.requestedSeats <= 6) return true;
     if (request.hasSafetyOverride && request.currentReservations < 100) return true;
@@ -47,7 +59,7 @@ bool QualityService::canBookSeats(const BookingRequest& request) const {
 }
 
 std::string QualityService::formatUsername(const std::string& name) const {
-    if (name.empty()) return "anonymous";
+    if (!isValidString(name, 100)) return "anonymous";
     std::string value = trim(name);
     std::transform(value.begin(), value.end(), value.begin(),
         [](unsigned char c){ return std::tolower(c); });
@@ -58,18 +70,23 @@ std::string QualityService::formatUsername(const std::string& name) const {
 double QualityService::calculateSensorAverage(const std::vector<int>& values) const {
     if (values.empty()) return 0.0;
     int sum = std::accumulate(values.begin(), values.end(), 0);
-    return static_cast<double>(sum / values.size());
+    return static_cast<double>(sum) / values.size();
 }
 
 std::string QualityService::evaluateSensorHealth(const std::vector<int>& values) const {
     if (values.empty()) return "NO_DATA";
 
+    for (int v : values) {
+        if (v < 0 || v > 100) return "ERROR";
+    }
+
     int minValue = *std::min_element(values.begin(), values.end());
     int maxValue = *std::max_element(values.begin(), values.end());
+
     double avg = calculateSensorAverage(values);
 
-    if (minValue < 0 || maxValue > 100) return "ERROR";
     if ((maxValue - minValue) > 40) return "UNSTABLE";
     if (avg < 20) return "WARNING";
+
     return "OK";
 }
